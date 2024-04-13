@@ -30,14 +30,21 @@ var img = &cobra.Command{
 			return err
 		}
 
-		bounds := graphic.Bounds()
-		resized := image.NewRGBA(image.Rectangle{image.Point{0, 0}, image.Point{bounds.Dx() / 40, bounds.Dy() / 40}})
+		width, err := cmd.Flags().GetInt("width")
+		if err != nil {
+			return err
+		}
+		height, err := cmd.Flags().GetInt("height")
+		if err != nil {
+			return err
+		}
+
+		resized := image.NewRGBA(image.Rectangle{image.Point{0, 0}, image.Point{width, height}})
 		draw.NearestNeighbor.Scale(resized, resized.Rect, graphic, graphic.Bounds(), draw.Over, nil)
 
-		bounds = resized.Bounds()
 		style := lipgloss.NewStyle()
-		for y := 0; y < bounds.Dy(); y++ {
-			for x := 0; x < bounds.Dx(); x++ {
+		for y := 0; y < height; y++ {
+			for x := 0; x < width; x++ {
 				r, g, b, a := resized.At(x, y).RGBA()
 				color := fmt.Sprintf("#%x%x%x%x", uint8(r), uint8(g), uint8(b), uint16(a))
 				space := style.Background(lipgloss.Color(color)).Render("  ")
@@ -51,5 +58,7 @@ var img = &cobra.Command{
 }
 
 func init() {
+	img.Flags().IntP("width", "x", 50, "Width of the resulting ascii art.")
+	img.Flags().IntP("height", "y", 50, "Height of the resulting ascii art.")
 	root.AddCommand(img)
 }
