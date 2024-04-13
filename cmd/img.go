@@ -7,6 +7,9 @@ import (
 	_ "image/png"
 	"os"
 
+	"golang.org/x/image/draw"
+
+	"github.com/charmbracelet/lipgloss"
 	"github.com/spf13/cobra"
 )
 
@@ -22,13 +25,27 @@ var img = &cobra.Command{
 		}
 		defer file.Close()
 
-		graphic, format, err := image.Decode(file)
+		graphic, _, err := image.Decode(file)
 		if err != nil {
 			return err
 		}
 
-		fmt.Println(format)
-		fmt.Println(graphic.Bounds())
+		bounds := graphic.Bounds()
+		resized := image.NewRGBA(image.Rectangle{image.Point{0, 0}, image.Point{bounds.Dx() / 40, bounds.Dy() / 40}})
+		draw.NearestNeighbor.Scale(resized, resized.Rect, graphic, graphic.Bounds(), draw.Over, nil)
+
+		bounds = resized.Bounds()
+		style := lipgloss.NewStyle()
+		for y := 0; y < bounds.Dy(); y++ {
+			for x := 0; x < bounds.Dx(); x++ {
+				r, g, b, a := resized.At(x, y).RGBA()
+				color := fmt.Sprintf("#%x%x%x%x", uint8(r), uint8(g), uint8(b), uint16(a))
+				space := style.Background(lipgloss.Color(color)).Render("  ")
+				fmt.Print(space)
+			}
+			fmt.Print("\n")
+		}
+
 		return nil
 	},
 }
