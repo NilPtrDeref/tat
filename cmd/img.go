@@ -2,6 +2,10 @@ package cmd
 
 import (
 	"fmt"
+	"image"
+	_ "image/jpeg"
+	_ "image/png"
+	"os"
 
 	"github.com/spf13/cobra"
 )
@@ -9,8 +13,23 @@ import (
 var img = &cobra.Command{
 	Use:   "img",
 	Short: "Convert a given input image to ascii art.",
-	Run: func(cmd *cobra.Command, args []string) {
-		fmt.Println("img called")
+	Args:  cobra.ExactArgs(1),
+	RunE: func(cmd *cobra.Command, args []string) error {
+		filepath := args[0]
+		file, err := os.Open(filepath)
+		if err != nil {
+			return err
+		}
+		defer file.Close()
+
+		graphic, format, err := image.Decode(file)
+		if err != nil {
+			return err
+		}
+
+		fmt.Println(format)
+		fmt.Println(graphic.Bounds())
+		return nil
 	},
 }
 
