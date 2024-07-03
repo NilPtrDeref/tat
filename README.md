@@ -17,3 +17,9 @@ Flags:
 
 Use "tat [command] --help" for more information about a command.
 ```
+
+## Example
+```
+go run . img ./testdata/gopher.png -x 60 -y 60
+```
+![example](assets/example.png)
